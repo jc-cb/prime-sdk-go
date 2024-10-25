@@ -18,6 +18,7 @@ package prime
 
 import (
 	"context"
+	"encoding/json"
 	"sync"
 	"time"
 
@@ -28,6 +29,7 @@ const (
 	webSocketHeartbeats = "heartbeats"
 	webSocketOrders     = "orders"
 	webSocketL2         = "l2_data"
+	webSocketError      = "error"
 )
 
 type webSocket struct {
@@ -38,7 +40,8 @@ type webSocket struct {
 	url          string
 	dialTimeout  time.Duration
 
-	productIds        []string
+	productIds []string
+
 	l2Callback        WebSockeL2Callback
 	orderCallback     WebSockeOrderCallback
 	heartbeatCallback webSockeHeartbeatCallback
@@ -61,10 +64,42 @@ func (s *webSocket) subscribe() error {
 	}
 
 	// Ensure the listener is running
+	go s.listenForWebSocketMessages()
 
 	// Send the subscribe messages
 
 	return nil
+}
+
+func (s *webSocket) messageMultiplexer(m []byte) {
+
+	baseMsg := &WebSocketMessage{}
+
+	if err := json.Unmarshal(m, baseMsg); err != nil {
+		// TODO: call the error listener
+	}
+
+	switch baseMsg.Channel {
+	case webSocketHeartbeats:
+	case webSocketOrders:
+	case webSocketL2:
+	default:
+		switch baseMsg.Type {
+		case webSocketError:
+			// TODO: Call the error
+		default:
+			// TODO: Call the error
+		}
+	}
+}
+
+func (s *webSocket) listenForWebSocketMessages() {
+
+	if err := core.ListenForWebSocketMessages(s.conn, s.messageMultiplexer); err != nil {
+		// TODO: call the error listener
+		return
+	}
+
 }
 
 // connect creates a new WebSocket connection. If the connection is already
