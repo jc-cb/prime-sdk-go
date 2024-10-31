@@ -21,6 +21,8 @@ import (
 	"fmt"
 
 	"github.com/coinbase-samples/core-go"
+	"github.com/coinbase-samples/prime-sdk-go/client"
+	"github.com/coinbase-samples/prime-sdk-go/model"
 )
 
 type ListPortfolioBalancesRequest struct {
@@ -30,10 +32,10 @@ type ListPortfolioBalancesRequest struct {
 }
 
 type ListPortfolioBalancesResponse struct {
-	Balances              []*Balance                    `json:"balances"`
+	Balances              []*model.Balance              `json:"balances"`
 	Type                  string                        `json:"type"`
-	TradingWalletBalances *BalanceWithHolds             `json:"trading_balances"`
-	VaultWalletBalances   *BalanceWithHolds             `json:"vault_balances"`
+	TradingWalletBalances *model.BalanceWithHolds       `json:"trading_balances"`
+	VaultWalletBalances   *model.BalanceWithHolds       `json:"vault_balances"`
 	Request               *ListPortfolioBalancesRequest `json:"request"`
 }
 
@@ -55,7 +57,16 @@ func (s *balancesServiceImpl) ListPortfolioBalances(
 
 	response := &ListPortfolioBalancesResponse{Request: request}
 
-	if err := core.HttpGet(ctx, s.client, path, queryParams, successStatusCodes, request, response, s.client.HeadersFunc()); err != nil {
+	if err := core.HttpGet(
+		ctx,
+		s.client,
+		path,
+		queryParams,
+		client.DefaultSuccessHttpStatusCodes,
+		request,
+		response,
+		s.client.HeadersFunc(),
+	); err != nil {
 		return nil, err
 	}
 

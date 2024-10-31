@@ -21,6 +21,8 @@ import (
 	"fmt"
 
 	"github.com/coinbase-samples/core-go"
+	"github.com/coinbase-samples/prime-sdk-go/client"
+	"github.com/coinbase-samples/prime-sdk-go/model"
 )
 
 type GetWalletBalanceRequest struct {
@@ -29,7 +31,7 @@ type GetWalletBalanceRequest struct {
 }
 
 type GetWalletBalanceResponse struct {
-	Balance *Balance `json:"balance"`
+	Balance *model.Balance `json:"balance"`
 	Request *GetWalletBalanceRequest
 }
 
@@ -42,7 +44,16 @@ func (s *balancesServiceImpl) GetWalletBalance(
 
 	response := &GetWalletBalanceResponse{Request: request}
 
-	if err := core.HttpGet(ctx, s.client, path, core.EmptyQueryParams, successStatusCodes, request, response, s.client.HeadersFunc()); err != nil {
+	if err := core.HttpGet(
+		ctx,
+		s.client,
+		path,
+		core.EmptyQueryParams,
+		client.DefaultSuccessHttpStatusCodes,
+		request,
+		response,
+		s.client.HeadersFunc(),
+	); err != nil {
 		return nil, err
 	}
 
